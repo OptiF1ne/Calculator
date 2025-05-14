@@ -1,9 +1,14 @@
 package com.optif1ne.calculator.view;
 
+import com.optif1ne.calculator.controller.CalculatorController;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * Представление калькулятора на Swing.
@@ -15,6 +20,7 @@ public class CalculatorView {
     private JFrame frame;
     private JLabel display;
     private List<JButton> buttons;
+    private CalculatorController controller;
 
     public CalculatorView() {
         frame = new JFrame("Калькулятор");
@@ -49,6 +55,42 @@ public class CalculatorView {
 
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+    }
+
+    public void setUpKeyBindings(CalculatorController controller) {
+        this.controller = controller;
+
+        BiConsumer<KeyStroke, String> bindKeys = getKeyStrokeStringBiConsumer(controller);
+
+        for (char i = '0'; i <= '9'; i++) {
+            bindKeys.accept(KeyStroke.getKeyStroke(i), String.valueOf(i));
+        }
+
+        bindKeys.accept(KeyStroke.getKeyStroke('.'), ".");
+
+        bindKeys.accept(KeyStroke.getKeyStroke('/'), "/");
+        bindKeys.accept(KeyStroke.getKeyStroke('*'), "*");
+        bindKeys.accept(KeyStroke.getKeyStroke('-'), "-");
+        bindKeys.accept(KeyStroke.getKeyStroke('+'), "+");
+        bindKeys.accept(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "=");
+        bindKeys.accept(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "C");
+    }
+
+    private BiConsumer<KeyStroke, String> getKeyStrokeStringBiConsumer(CalculatorController controller) {
+        JComponent root = (JComponent) frame.getContentPane();
+
+        InputMap im = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = root.getActionMap();
+
+        return (keyStroke, name) -> {
+            im.put(keyStroke, name);
+            am.put(name, new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    controller.handleInput(name);
+                }
+            });
+        };
     }
 
     public List<JButton> getAllButtons() {

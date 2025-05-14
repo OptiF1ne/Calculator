@@ -17,26 +17,27 @@ public class CalculatorController {
     private final Calculator model;
     private final CalculatorView view;
 
-
     public CalculatorController(Calculator model, CalculatorView view) {
         this.model = model;
         this.view = view;
         attachListeners();
+        view.setUpKeyBindings(this);
     }
 
     private void attachListeners() {
         List<JButton> buttons = view.getAllButtons();
         for (JButton btn : buttons) {
-            btn.addActionListener(e -> handleButtonClick(btn.getText()));
+            btn.addActionListener(e -> handleInput(btn.getText()));
         }
     }
 
-    private void handleButtonClick(String label) {
+    public void handleInput(String label) {
         switch (label) {
             case "0": case "1": case "2": case "3": case "4":
             case "5": case "6": case "7": case "8": case "9":
                 model.enterDigit(label.charAt(0));
                 break;
+
             case ".":
                 model.enterDecimalPoint();
                 break;
@@ -62,7 +63,6 @@ public class CalculatorController {
             default:
                 return;
         }
-
         view.updateDisplay(model.getDisplayString());
     }
 }
